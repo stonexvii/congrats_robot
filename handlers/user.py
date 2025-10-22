@@ -9,6 +9,7 @@ from aiogram.types import Message, CallbackQuery
 
 from ai_gpt import ai_client
 from ai_gpt.enums import GPTRole
+from ai_gpt.enums import Path
 from ai_gpt.gpt_client import GPTMessage
 from data import ANSWERS
 from fsm.states import UserDialog
@@ -22,7 +23,7 @@ async def voice_to_text(message: Message, bot: Bot):
     try:
         voice = await bot.get_file(message.voice.file_id)
         file_path = voice.file_path
-        voice_ogg = os.path.join('data', f'voice_{message.from_user.id}.ogg')
+        voice_ogg = os.path.join(Path.VOICE.value, f'voice_{message.from_user.id}.ogg')
         await bot.download_file(file_path, destination=voice_ogg)
         response_text = await ai_client.transcript_voice(voice_ogg, bot)
         os.remove(voice_ogg)

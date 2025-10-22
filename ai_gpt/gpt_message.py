@@ -2,7 +2,7 @@ import json
 import os
 
 from utils import FileManager
-from .enums import GPTRole
+from .enums import GPTRole, Path
 
 
 class GPTMessage:
@@ -19,7 +19,7 @@ class GPTMessage:
         return [message]
 
     def _load_prompt(self) -> str:
-        prompt_path: str = os.path.join('ai_gpt', 'prompts', self._prompt_name)
+        prompt_path: str = os.path.join(Path.PROMPT.value, self._prompt_name)
         prompt = FileManager.read_txt(prompt_path)
         return prompt
 

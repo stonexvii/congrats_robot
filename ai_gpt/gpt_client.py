@@ -1,5 +1,6 @@
 import openai
 from aiogram import Bot
+
 import config
 from .enums import GPTModel
 from .gpt_message import GPTMessage
@@ -44,7 +45,7 @@ class ChatGPT:
         try:
             with open(file, "rb") as audio_file:
                 transcript = await self._client.audio.transcriptions.create(
-                    model="whisper-1",
+                    model=GPTModel.WHISPER.value,
                     file=audio_file
                 )
                 return transcript.text
@@ -53,3 +54,18 @@ class ChatGPT:
                 chat_id=config.ADMIN_ID,
                 text=str(e),
             )
+
+    # async def generate_image(self, description: str, url: str):
+    #     prompt = await FileManager.read('ai_gpt', 'prompts', 'dalle_prompt', desc=description, url=url)
+    #     print(prompt)
+    #     image_response = await self._client.images.generate(
+    #         model=GPTModel.GPT_IMAGE.value,
+    #         prompt=prompt,
+    #         size="1024x1024",
+    #     )
+    #     image_url = image_response.data[0].url
+    #     resp_img = requests.get(image_url)
+    #     final_img = Image.open(BytesIO(resp_img.content))
+    #     final_img.save(os.path.join('data', 'final_card.png'))
+    #     with open(os.path.join('data', 'final_card.png'), "rb") as photo:
+    #         return photo
