@@ -1,6 +1,6 @@
 import openai
 from aiogram import Bot
-
+import httpx
 import config
 from .enums import GPTModel
 from .gpt_message import GPTMessage
@@ -23,8 +23,10 @@ class GPTService:
     def _create_client(self):
         gpt_client = openai.AsyncOpenAI(
             api_key=self._gpt_token,
+            http_client=httpx.AsyncClient(
+                proxy=self._proxy,
+            )
         )
-        gpt_client._client._request_args = {"proxies": self._proxy}
         return gpt_client
 
     async def request(self, message_list: GPTMessage, bot: Bot) -> str:
