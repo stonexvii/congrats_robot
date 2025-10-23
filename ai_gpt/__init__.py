@@ -1,3 +1,3 @@
-from .gpt_client import ChatGPT
+from .gpt_client import GPTService
 from .gpt_message import GPTMessage
-ai_client = ChatGPT()
+ai_client = GPTService()

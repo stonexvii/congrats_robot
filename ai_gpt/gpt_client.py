@@ -6,7 +6,7 @@ from .enums import GPTModel
 from .gpt_message import GPTMessage
 
 
-class ChatGPT:
+class GPTService:
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -15,7 +15,7 @@ class ChatGPT:
         return cls._instance
 
     def __init__(self, model: GPTModel = GPTModel.GPT_4_TURBO):
-        self._gpt_token = config.OPENAI_TOKEN
+        self._gpt_token = config.OPENAI_API_KEY
         self._proxy = config.PROXY
         self._client = self._create_client()
         self._model = model.value
@@ -23,11 +23,12 @@ class ChatGPT:
     def _create_client(self):
         gpt_client = openai.AsyncOpenAI(
             api_key=self._gpt_token,
-            base_url=self._proxy,
         )
+        gpt_client._client._request_args = {"proxies": self._proxy}
         return gpt_client
 
     async def request(self, message_list: GPTMessage, bot: Bot) -> str:
+
         try:
             response = await self._client.chat.completions.create(
                 messages=message_list.message_list,

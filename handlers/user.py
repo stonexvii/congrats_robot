@@ -8,8 +8,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 
 from ai_gpt import ai_client
-from ai_gpt.enums import GPTRole
-from ai_gpt.enums import Path
+from ai_gpt.enums import GPTRole, Path
 from ai_gpt.gpt_client import GPTMessage
 from data import ANSWERS
 from fsm.states import UserDialog
@@ -100,6 +99,7 @@ async def user_message(message: Message, bot: Bot, state: FSMContext):
         msg_list = GPTMessage('main_prompt')
         msg_list.update(GPTRole.USER, f'Привет! Меня зовут {message.from_user.full_name}!\n' + data_text)
         response = await ai_client.request(msg_list, bot)
+        print(response)
         if response.startswith('None'):
             response = response.split('\n', 1)[-1].strip()
         else:
