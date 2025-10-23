@@ -99,7 +99,6 @@ async def user_message(message: Message, bot: Bot, state: FSMContext):
         msg_list = GPTMessage('main_prompt')
         msg_list.update(GPTRole.USER, f'Привет! Меня зовут {message.from_user.full_name}!\n' + data_text)
         response = await ai_client.request(msg_list, bot)
-        print(response)
         if response.startswith('None'):
             response = response.split('\n', 1)[-1].strip()
         else:
