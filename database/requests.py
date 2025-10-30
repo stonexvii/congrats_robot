@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from .db_engine import async_session, engine
-from .tables import Base, User, Menu, Project, Media
+from .tables import Base, User
 
 MenuData = namedtuple('MenuData', ['text', 'media_id'])
 
