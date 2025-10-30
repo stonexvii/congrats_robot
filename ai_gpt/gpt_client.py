@@ -45,18 +45,18 @@ class GPTService:
             )
 
     async def transcript_voice(self, file, bot: Bot):
-        try:
-            with open(file, "rb") as audio_file:
-                transcript = await self._client.audio.transcriptions.create(
-                    model=GPTModel.WHISPER.value,
-                    file=audio_file
-                )
-                return transcript.text
-        except Exception as e:
-            await bot.send_message(
-                chat_id=config.ADMIN_ID,
-                text=str(e),
+        # try:
+        with open(file, "rb") as audio_file:
+            transcript = await self._client.audio.transcriptions.create(
+                model=GPTModel.WHISPER.value,
+                file=audio_file
             )
+            return transcript.text
+        # except Exception as e:
+        #     await bot.send_message(
+        #         chat_id=config.ADMIN_ID,
+        #         text=str(e),
+        #     )
 
     # async def generate_image(self, description: str, url: str):
     #     prompt = await FileManager.read('ai_gpt', 'prompts', 'dalle_prompt', desc=description, url=url)

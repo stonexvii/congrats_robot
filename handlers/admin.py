@@ -2,7 +2,7 @@ from aiogram import Router, Bot
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
-from ai_gpt.enums import Path
+from utils.enums import Path
 from utils import FileManager
 from middleware import Admin
 

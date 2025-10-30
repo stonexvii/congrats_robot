@@ -19,8 +19,10 @@ class FileManager:
             await file.write(data)
 
     @staticmethod
-    def read_txt(*args, **kwargs) -> str:
+    def read_txt(*args, with_kwargs: bool = True, **kwargs) -> str:
         path = os.path.join(*args) + '.txt'
         with open(path, 'r', encoding='UTF-8') as file:
             response = file.read()
-        return response.strip().format(**kwargs)
+        if with_kwargs:
+            return response.strip().format(**kwargs)
+        return response.strip()

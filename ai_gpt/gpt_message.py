@@ -2,8 +2,9 @@ import json
 import os
 
 from utils import FileManager
-from .enums import GPTRole, Path
-
+from .enums import GPTRole
+from  utils.enums import Path
+from datetime import date
 
 class GPTMessage:
 
@@ -20,7 +21,7 @@ class GPTMessage:
 
     def _load_prompt(self) -> str:
         prompt_path: str = os.path.join(Path.PROMPT.value, self._prompt_name)
-        prompt = FileManager.read_txt(prompt_path)
+        prompt = FileManager.read_txt(prompt_path, current_date=date.today())
         return prompt
 
     def update(self, role: GPTRole, message: str):

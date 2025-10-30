@@ -7,6 +7,7 @@ from aiogram.enums import ParseMode
 import config
 import misc
 from handlers import main_router
+from scheduler.scheduler import scheduler
 
 
 async def start_bot():
@@ -18,9 +19,10 @@ async def start_bot():
     )
     dp = Dispatcher()
 
-    dp.startup.register(misc.start_up)
-    dp.shutdown.register(misc.shutdown)
+    dp.startup.register(misc.on_start)
+    dp.shutdown.register(misc.on_shutdown)
     dp.include_router(main_router)
+    scheduler.start()
     await dp.start_polling(bot)
 
 

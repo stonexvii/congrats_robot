@@ -15,7 +15,4 @@ class GPTModel(Enum):
     GPT_IMAGE = 'dall-e-3'
 
 
-class Path(Enum):
-    PROMPT = os.path.join('ai_gpt', 'prompts')
-    MESSAGE = os.path.join('data', 'message')
-    VOICE = os.path.join('data', 'voice')
+

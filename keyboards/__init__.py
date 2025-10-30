@@ -1,1 +1,1 @@
-from .inline_keyboards import ikb_thx_button
+from .inline_keyboards import ikb_approve_button, ikb_main_menu, ikb_back_button
