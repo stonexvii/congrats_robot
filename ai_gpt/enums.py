@@ -1,4 +1,3 @@
-import os
 from enum import Enum
 
 
@@ -13,6 +12,3 @@ class GPTModel(Enum):
     GPT_4_TURBO = 'gpt-4-turbo'
     WHISPER = 'whisper-1'
     GPT_IMAGE = 'dall-e-3'
-
-
-

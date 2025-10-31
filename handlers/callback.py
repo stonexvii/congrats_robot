@@ -1,17 +1,20 @@
+from datetime import date
+from datetime import datetime
+
 from aiogram import Router, Bot, F
-from aiogram.enums import ChatAction
-from aiogram.filters import Command
+from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
 
 from ai_gpt import GPTMessage
-from utils.enums import Path
-from utils import FileManager
-from aiogram.fsm.context import FSMContext
-from datetime import datetime, timedelta
-from scheduler.scheduler import schedule_event
-from keyboards import ikb_main_menu, ikb_back_button
+from ai_gpt.enums import GPTRole
+from database import requests
+from database.tables import User
+from fsm import Generate, Reminder, UserName
+from keyboards import ikb_main_menu, ikb_back_button, ikb_welcome
 from keyboards.callback_data import CallbackBackButton, CallbackMainMenu, CallbackApprove
-from fsm import Generate, Reminder
+from scheduler.scheduler import schedule_event
+from utils import FileManager
+from utils.enums import Path
 
 callback_router = Router()
 
@@ -27,8 +30,35 @@ async def callback_main_menu(callback: CallbackQuery, state: FSMContext, bot: Bo
     )
 
 
+@callback_router.callback_query(CallbackMainMenu.filter(F.button == 'apply'))
+async def apply_welcome(callback: CallbackQuery, callback_data: CallbackMainMenu, state: FSMContext, bot: Bot):
+    msg_text = await FileManager.read(Path.MESSAGE.value, 'welcome_name', name=callback.from_user.full_name)
+    await bot.edit_message_text(
+        chat_id=callback.from_user.id,
+        message_id=callback.message.message_id,
+        text=msg_text,
+        reply_markup=ikb_welcome('Пропустить', 'skip'),
+    )
+    await state.set_state(UserName.wait_for_answer)
+    await state.update_data(
+        {
+            'message_id': callback.message.message_id,
+        }
+    )
+
+
+@callback_router.callback_query(CallbackMainMenu.filter(F.button == 'skip'))
+async def skip_name(callback: CallbackQuery, callback_data: CallbackMainMenu, state: FSMContext, bot: Bot):
+    await requests.new_user(
+        user_tg_id=callback.from_user.id,
+        name=callback.from_user.full_name,
+        tg_username=callback.from_user.username,
+    )
+    await callback_main_menu(callback, state, bot)
+
+
 @callback_router.callback_query(CallbackMainMenu.filter())
-async def menu_choice(callback: CallbackQuery, callback_data: CallbackMainMenu, state: FSMContext, bot: Bot):
+async def menu_item(callback: CallbackQuery, callback_data: CallbackMainMenu, user: User, state: FSMContext, bot: Bot):
     msg_text = await FileManager.read(Path.MESSAGE.value, f'start_{callback_data.button}')
     await bot.edit_message_text(
         chat_id=callback.from_user.id,
@@ -41,11 +71,12 @@ async def menu_choice(callback: CallbackQuery, callback_data: CallbackMainMenu, 
         state_name = Reminder
     await state.set_state(state_name.wait_for_answer)
     msg_list = GPTMessage(callback_data.button)
-    await state.update_data(
-        {
-            'messages': msg_list.json(),
-        }
-    )
+    add_task = ''
+    if idx := callback_data.id:
+        task = await requests.get_task(idx)
+        add_task = f'\nПоздравь {task.name} с {task.event_type}'
+    msg_list.update(GPTRole.USER, f'Привет, меня зовут {user.name}!' + add_task)
+    await state.update_data({'messages': msg_list.json()})
 
 
 @callback_router.callback_query(CallbackBackButton.filter(F.button == 'to_main'))
@@ -54,9 +85,33 @@ async def back_to_main_menu(callback: CallbackQuery, state: FSMContext, bot: Bot
 
 
 @callback_router.callback_query(CallbackApprove.filter())
-async def approve_callback(callback: CallbackQuery, callback_data: CallbackApprove, state: FSMContext, bot: Bot):
+async def approve_callback(callback: CallbackQuery, callback_data: CallbackApprove, user: User, state: FSMContext,
+                           bot: Bot):
+    if callback_data.button == 'generate':
+        msg_text = 'Супер!\nИстория нашей переписки очищена'
+    else:
+        msg_text = 'Отлично!\nЯ записал уведомление и оповещу тебя как и договорились!'
+        json_data = await state.get_value('json')
+        reminder = datetime.fromisoformat(json_data['reminder'])
+        event_date = date.fromisoformat(json_data['date'])
+        task = await requests.new_task(
+            user_tg_id=callback.from_user.id,
+            user_name=user.name,
+            event_type=json_data['event'],
+            event_date=event_date,
+            reminder=reminder,
+        )
+        data = {
+            'task_id': task.id,
+            'user_name': user.name,
+            'name': json_data['name'],
+            'event': json_data['event'],
+            'date': event_date,
+            'reminder': reminder,
+        }
+        schedule_event(callback.from_user.id, data, bot)
     await callback.answer(
-        text=callback_data.button,
+        text=msg_text,
         show_alert=True,
     )
     await callback_main_menu(callback, state, bot)

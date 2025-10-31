@@ -2,9 +2,9 @@ from aiogram import Router, Bot
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
-from utils.enums import Path
-from utils import FileManager
 from middleware import Admin
+from utils import FileManager
+from utils.enums import Path
 
 admin_router = Router()
 admin_router.message.middleware(Admin())

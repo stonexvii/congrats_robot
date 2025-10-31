@@ -1,10 +1,11 @@
 import json
 import os
+from datetime import date
 
 from utils import FileManager
+from utils.enums import Path
 from .enums import GPTRole
-from  utils.enums import Path
-from datetime import date
+
 
 class GPTMessage:
 

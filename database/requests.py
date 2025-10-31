@@ -1,14 +1,11 @@
-from collections import namedtuple
-from datetime import date
+from datetime import date, datetime
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from .db_engine import async_session, engine
-from .tables import Base, User
-
-MenuData = namedtuple('MenuData', ['text', 'media_id'])
+from .tables import Base, User, Task
 
 
 def connection(function):
@@ -37,15 +34,11 @@ async def get_user(user_tg_id: int, session: AsyncSession):
 
 
 @connection
-async def new_user(user_tg_id: int, name: str, tg_username: str, register_date: date, referral_id: int | None,
-                   session: AsyncSession) -> User:
+async def new_user(user_tg_id: int, name: str, tg_username: str, session: AsyncSession) -> User:
     user = User(
         id=user_tg_id,
         name=name,
         tg_username=tg_username,
-        referral_id=referral_id,
-        register_date=register_date,
-        balance=0,
     )
     session.add(user)
     await session.commit()
@@ -61,50 +54,29 @@ async def update_name(user_tg_id: int, name: str, session: AsyncSession):
 
 
 @connection
-async def new_referral(user_tg_id: int, session: AsyncSession):
-    stmt = update(User).where(User.id == user_tg_id).values(is_referral=True)
-    await session.execute(stmt)
-    await session.commit()
+async def get_task(task_id: int, session: AsyncSession):
+    task = await session.scalar(select(Task).options(selectinload(Task.user)).where(Task.id == task_id))
+    return task
 
 
 @connection
-async def get_referrals(user_tg_id: int, session: AsyncSession):
-    response = await session.scalars(select(User).where(User.referral_id == user_tg_id))
-    return response.all()
-
-
-@connection
-async def get_menu(item: str, session: AsyncSession, full: bool = False, as_kwargs: bool = True,
-                   **kwargs) -> Menu | dict | MenuData:
-    response = await session.scalar(select(Menu).options(selectinload(Menu.media)).where(Menu.name == item))
-    if full:
-        return response
-    elif as_kwargs:
-        return {'caption': response.description.format(**kwargs), 'media': response.media[0].media_id}
-    return MenuData(response.description.format(**kwargs), response.media[0].media_id)
-
-
-@connection
-async def get_project(item: str, session: AsyncSession, as_kwargs: bool = True, **kwargs) -> Project | dict:
-    response = await session.scalar(
-        select(Project).options(selectinload(Project.media), selectinload(Project.buttons)).where(Project.name == item))
-    if as_kwargs:
-        return {'caption': response.description.format(**kwargs), 'media': response.media[0].media_id}
-    return response
-
-
-@connection
-async def get_all_projects(session: AsyncSession):
-    response = await session.scalars(select(Project).where(Project.is_active == True))
-    return response.all()
-
-
-@connection
-async def add_portfolio(file_id: str, desc: str, session: AsyncSession):
-    media = Media(
-        menu_id=12,
-        media_id=file_id,
-        description=desc,
+async def new_task(user_tg_id: int, user_name: str, event_type: str, event_date: date, reminder: datetime,
+                   session: AsyncSession):
+    task = Task(
+        user_id=user_tg_id,
+        name=user_name,
+        event_type=event_type,
+        event_date=event_date,
+        reminder=reminder,
     )
-    session.add(media)
+    session.add(task)
     await session.commit()
+    task = await get_task(task.id)
+    return task
+
+
+@connection
+async def get_all_tasks(session: AsyncSession):
+    response = await session.scalars(
+        select(Task).options(selectinload(Task.user)).where(Task.reminder > datetime.now()))
+    return response.all()

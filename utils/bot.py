@@ -1,31 +1,22 @@
-import asyncio
 import os
 from random import choice
 
-from aiogram import Router, Bot, F
+from aiogram import Bot
 from aiogram.enums import ChatAction
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 
 from ai_gpt import ai_client
-from ai_gpt.enums import GPTRole
+from data.answers import REMINDER, GENERATE
+from fsm import Generate
 from utils.enums import Path
-from ai_gpt.gpt_client import GPTMessage
-from data import ANSWERS
-from fsm.states import UserDialog
-from keyboards import ikb_approve_button
-from keyboards.callback_data import CallbackApprove
-import json
-
-from utils import FileManager
-from utils.enums import Path
-from scheduler.scheduler import schedule_event
-from datetime import datetime
 
 
-async def bot_thinking(message: Message, bot: Bot):
+async def bot_thinking(message: Message, state: FSMContext, bot: Bot):
+    data = await state.get_state()
+    messages = GENERATE if data == Generate.wait_for_answer else REMINDER
     await message.answer(
-        text=choice(ANSWERS),
+        text=choice(messages),
     )
     await bot.send_chat_action(
         chat_id=message.from_user.id,

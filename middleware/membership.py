@@ -8,10 +8,10 @@ import config
 
 class Membership(BaseMiddleware):
     async def __call__(
-        self,
-        handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
-        update: TelegramObject,
-        data: Dict[str, Any]
+            self,
+            handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
+            update: TelegramObject,
+            data: Dict[str, Any]
     ) -> Any:
         bot = update.bot
         membership = await bot.get_chat_member(config.CHANNEL_ID, update.from_user.id)
