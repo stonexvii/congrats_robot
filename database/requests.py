@@ -70,8 +70,7 @@ async def new_task(user_tg_id: int, user_name: str, event_type: str, event_date:
         reminder=reminder,
     )
     session.add(task)
-    await session.commit()
-    task = await get_task(task.id)
+    await session.flush()
     return task
 
 
