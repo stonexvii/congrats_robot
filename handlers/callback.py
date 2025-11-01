@@ -1,6 +1,6 @@
 from datetime import date
 from datetime import datetime
-
+from asyncio import sleep
 from aiogram import Router, Bot, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery
@@ -18,6 +18,16 @@ from utils import FileManager
 from utils.enums import Path
 
 callback_router = Router()
+
+
+async def new_main_menu(callback: CallbackQuery, user: User, state: FSMContext, bot: Bot):
+    await state.clear()
+    msg_text = await FileManager.read(Path.START_COMMAND.value, user_name=user.name)
+    await bot.send_message(
+        chat_id=callback.from_user.id,
+        text=msg_text,
+        reply_markup=ikb_main_menu(),
+    )
 
 
 async def callback_main_menu(callback: CallbackQuery, user: User, state: FSMContext, bot: Bot):
@@ -121,4 +131,5 @@ async def approve_callback(callback: CallbackQuery, callback_data: CallbackAppro
         text=msg_text,
         show_alert=True,
     )
-    await callback_main_menu(callback, user, state, bot)
+    await sleep(3)
+    await new_main_menu(callback, user, state, bot)
