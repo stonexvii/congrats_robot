@@ -60,6 +60,13 @@ async def get_task(task_id: int, session: AsyncSession):
 
 
 @connection
+async def del_task(task_id: int, session: AsyncSession):
+    task = await session.scalar(select(Task).options(selectinload(Task.user)).where(Task.id == task_id))
+    await session.delete(task)
+    await session.commit()
+
+
+@connection
 async def new_task(user_tg_id: int, user_name: str, event_type: str, event_date: date, reminder: datetime,
                    session: AsyncSession):
     task = Task(
@@ -71,7 +78,10 @@ async def new_task(user_tg_id: int, user_name: str, event_type: str, event_date:
     )
     session.add(task)
     await session.flush()
-    return task
+    task_id = task.id
+    await session.commit()
+    current_task = await get_task(task_id)
+    return current_task
 
 
 @connection

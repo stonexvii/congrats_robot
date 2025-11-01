@@ -12,9 +12,9 @@ from utils.enums import Path
 command_router = Router()
 
 
-async def message_main_menu(message: Message, message_id: int, state: FSMContext, bot: Bot):
+async def message_main_menu(message: Message, message_id: int, user: User, state: FSMContext, bot: Bot):
     await state.clear()
-    msg_text = await FileManager.read(Path.START_COMMAND.value)
+    msg_text = await FileManager.read(Path.START_COMMAND.value, user_name=user.name)
     await bot.edit_message_text(
         chat_id=message.from_user.id,
         message_id=message_id,
@@ -30,11 +30,11 @@ async def command_start(message: Message, user: User, bot: Bot):
             chat_id=message.from_user.id,
             action=ChatAction.TYPING,
         )
-        msg_text = await FileManager.read(Path.START_COMMAND.value)
+        msg_text = await FileManager.read(Path.START_COMMAND.value, user_name=user.name)
         keyboard = ikb_main_menu()
     else:
-        msg_text = await FileManager.read(Path.MESSAGE.value, 'welcome_start')
-        keyboard = ikb_welcome('Принять', 'apply')
+        msg_text = await FileManager.read(Path.MESSAGE.value, 'welcome_start', user_name=message.from_user.full_name)
+        keyboard = ikb_welcome('Продолжить', 'apply')
     await message.answer(
         text=msg_text,
         reply_markup=keyboard,

@@ -23,7 +23,6 @@ async def send_reminder(user_tg_id: int, data: dict, bot: Bot):
         reply_markup=ikb_remind_menu(task_id),
     )
 
-
 def schedule_event(user_tg_id: int, data: dict, bot: Bot):
     reminder = data.pop('reminder')
     scheduler.add_job(

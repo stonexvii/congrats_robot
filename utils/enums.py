@@ -9,3 +9,5 @@ class Path(Enum):
     START_COMMAND = os.path.join('data', 'message', 'start_command')
     START_REMINDER = os.path.join('data', 'message', 'start_reminder')
     START_GENERATE = os.path.join('data', 'message', 'start_generate')
+    EXAMPLES = os.path.join('data', 'examples')
+    BOT_MESSAGE = os.path.join('data', 'bot_messages')

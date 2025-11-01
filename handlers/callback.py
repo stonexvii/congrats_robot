@@ -7,6 +7,7 @@ from aiogram.types import CallbackQuery
 
 from ai_gpt import GPTMessage
 from ai_gpt.enums import GPTRole
+from data import get_examples
 from database import requests
 from database.tables import User
 from fsm import Generate, Reminder, UserName
@@ -19,9 +20,9 @@ from utils.enums import Path
 callback_router = Router()
 
 
-async def callback_main_menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
+async def callback_main_menu(callback: CallbackQuery, user: User, state: FSMContext, bot: Bot):
     await state.clear()
-    msg_text = await FileManager.read(Path.START_COMMAND.value)
+    msg_text = await FileManager.read(Path.START_COMMAND.value, user_name=user.name)
     await bot.edit_message_text(
         chat_id=callback.from_user.id,
         message_id=callback.message.message_id,
@@ -31,8 +32,13 @@ async def callback_main_menu(callback: CallbackQuery, state: FSMContext, bot: Bo
 
 
 @callback_router.callback_query(CallbackMainMenu.filter(F.button == 'apply'))
-async def apply_welcome(callback: CallbackQuery, callback_data: CallbackMainMenu, state: FSMContext, bot: Bot):
-    msg_text = await FileManager.read(Path.MESSAGE.value, 'welcome_name', name=callback.from_user.full_name)
+async def apply_welcome(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    msg_text = await FileManager.read(Path.MESSAGE.value, 'welcome_name', user_name=callback.from_user.full_name)
+    await requests.new_user(
+        user_tg_id=callback.from_user.id,
+        name=callback.from_user.full_name,
+        tg_username=callback.from_user.username,
+    )
     await bot.edit_message_text(
         chat_id=callback.from_user.id,
         message_id=callback.message.message_id,
@@ -48,18 +54,15 @@ async def apply_welcome(callback: CallbackQuery, callback_data: CallbackMainMenu
 
 
 @callback_router.callback_query(CallbackMainMenu.filter(F.button == 'skip'))
-async def skip_name(callback: CallbackQuery, callback_data: CallbackMainMenu, state: FSMContext, bot: Bot):
-    await requests.new_user(
-        user_tg_id=callback.from_user.id,
-        name=callback.from_user.full_name,
-        tg_username=callback.from_user.username,
-    )
-    await callback_main_menu(callback, state, bot)
+async def skip_name(callback: CallbackQuery, user: User, state: FSMContext, bot: Bot):
+    await callback_main_menu(callback, user, state, bot)
 
 
 @callback_router.callback_query(CallbackMainMenu.filter())
 async def menu_item(callback: CallbackQuery, callback_data: CallbackMainMenu, user: User, state: FSMContext, bot: Bot):
-    msg_text = await FileManager.read(Path.MESSAGE.value, f'start_{callback_data.button}')
+    examples = await get_examples(callback_data.button)
+    msg_text = await FileManager.read(Path.MESSAGE.value, f'start_{callback_data.button}', user_name=user.name,
+                                      examples=examples)
     await bot.edit_message_text(
         chat_id=callback.from_user.id,
         message_id=callback.message.message_id,
@@ -80,8 +83,8 @@ async def menu_item(callback: CallbackQuery, callback_data: CallbackMainMenu, us
 
 
 @callback_router.callback_query(CallbackBackButton.filter(F.button == 'to_main'))
-async def back_to_main_menu(callback: CallbackQuery, state: FSMContext, bot: Bot):
-    await callback_main_menu(callback, state, bot)
+async def back_to_main_menu(callback: CallbackQuery, user: User, state: FSMContext, bot: Bot):
+    await callback_main_menu(callback, user, state, bot)
 
 
 @callback_router.callback_query(CallbackApprove.filter())
@@ -89,6 +92,10 @@ async def approve_callback(callback: CallbackQuery, callback_data: CallbackAppro
                            bot: Bot):
     if callback_data.button == 'generate':
         msg_text = 'Супер!\nИстория нашей переписки очищена'
+        await bot.send_message(
+            chat_id=callback.from_user.id,
+            text=callback.message.text.split('\n\n', 1)[1].rsplit('\n\n', 1)[0],
+        )
     else:
         msg_text = 'Отлично!\nЯ записал уведомление и оповещу тебя как и договорились!'
         json_data = await state.get_value('json')
@@ -114,4 +121,4 @@ async def approve_callback(callback: CallbackQuery, callback_data: CallbackAppro
         text=msg_text,
         show_alert=True,
     )
-    await callback_main_menu(callback, state, bot)
+    await callback_main_menu(callback, user, state, bot)

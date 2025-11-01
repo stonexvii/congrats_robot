@@ -8,6 +8,7 @@ from ai_gpt import ai_client
 from ai_gpt.enums import GPTRole
 from ai_gpt.gpt_client import GPTMessage
 from database import requests
+from database.tables import User
 from fsm import Generate, Reminder, UserName
 from keyboards import ikb_approve_button, ikb_back_button
 from utils import FileManager
@@ -19,19 +20,18 @@ user_router = Router()
 
 
 @user_router.message(UserName.wait_for_answer)
-async def input_name(message: Message, bot: Bot, state: FSMContext):
-    name = message.text
+async def input_name(message: Message, user: User, bot: Bot, state: FSMContext):
+    name = message.text.strip()
     message_id = await state.get_value('message_id')
-    await requests.new_user(
+    await requests.update_name(
         user_tg_id=message.from_user.id,
         name=name,
-        tg_username=message.from_user.username,
     )
     await bot.delete_message(
         chat_id=message.from_user.id,
         message_id=message.message_id,
     )
-    await message_main_menu(message, message_id, state, bot)
+    await message_main_menu(message, message_id, user, state, bot)
 
 
 @user_router.message(Generate.wait_for_answer)
