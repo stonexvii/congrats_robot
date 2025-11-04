@@ -29,9 +29,6 @@ async def send_reminder(user_tg_id: int, data: dict, bot: Bot):
 
 def schedule_event(user_tg_id: int, data: dict, bot: Bot):
     reminder = data.pop('reminder')
-    print(reminder.astimezone(ZoneInfo('UTC')))
-    print(reminder)
-    print(datetime.datetime.now())
     scheduler.add_job(
         send_reminder,
         trigger="date",

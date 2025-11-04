@@ -1,7 +1,7 @@
 import json
 import os
-from datetime import date
-
+from datetime import datetime
+from pytz import timezone
 from utils import FileManager
 from utils.enums import Path
 from .enums import GPTRole
@@ -22,7 +22,7 @@ class GPTMessage:
 
     def _load_prompt(self) -> str:
         prompt_path: str = os.path.join(Path.PROMPT.value, self._prompt_name)
-        prompt = FileManager.read_txt(prompt_path, current_date=date.today())
+        prompt = FileManager.read_txt(prompt_path, current_date=datetime.now(timezone("Europe/Moscow")))
         return prompt
 
     def update(self, role: GPTRole, message: str):
