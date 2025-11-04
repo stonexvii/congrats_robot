@@ -126,8 +126,9 @@ async def approve_callback(callback: CallbackQuery, callback_data: CallbackAppro
             'date': event_date,
             'reminder': reminder,
         }
-        print(f'From callback: {callback.message.date}')
-        print(f'From datetime: {datetime.now()}')
+        await callback.message.answer(
+            text=f'From callback: {callback.message.date}\nFrom datetime: {datetime.now()}',
+        )
         schedule_event(callback.from_user.id, data, bot)
     await callback.answer(
         text=msg_text,
