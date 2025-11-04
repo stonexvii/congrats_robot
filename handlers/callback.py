@@ -113,7 +113,7 @@ async def approve_callback(callback: CallbackQuery, callback_data: CallbackAppro
         event_date = date.fromisoformat(json_data['date'])
         task = await requests.new_task(
             user_tg_id=callback.from_user.id,
-            user_name=user.name,
+            user_name=json_data['name'],
             event_type=json_data['event'],
             event_date=event_date,
             reminder=reminder,
