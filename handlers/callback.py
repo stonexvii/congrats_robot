@@ -1,6 +1,7 @@
+from asyncio import sleep
 from datetime import date
 from datetime import datetime
-from asyncio import sleep
+
 from aiogram import Router, Bot, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery

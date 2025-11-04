@@ -1,9 +1,7 @@
-import datetime
-from pytz import timezone
-from zoneinfo import ZoneInfo
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from pytz import timezone
 
 from ai_gpt import GPTMessage
 from ai_gpt import ai_client
