@@ -1,5 +1,5 @@
 import datetime
-
+from zoneinfo import ZoneInfo
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -28,7 +28,7 @@ async def send_reminder(user_tg_id: int, data: dict, bot: Bot):
 
 def schedule_event(user_tg_id: int, data: dict, bot: Bot):
     reminder = data.pop('reminder')
-    print(reminder.astimezone())
+    print(reminder.astimezone(ZoneInfo('UTC')))
     print(reminder)
     print(datetime.datetime.now())
     scheduler.add_job(
