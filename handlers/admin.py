@@ -14,12 +14,13 @@ admin_router.message.middleware(Admin())
 
 @admin_router.message(Command('set'))
 async def admin_set(message: Message, command: CommandObject):
+    file_list = [file.rsplit('.', 1)[0] for file in os.listdir(Path.PROMPT.value)]
+    msg_text = '\n'.join(file_list)
     if command.args:
         file_name, prompt = command.args.split(' ', 1)
-        await FileManager.write(Path.PROMPT.value, file_name, data=prompt)
-        msg_text = 'Done!'
-    else:
-        msg_text = '\n'.join(file.rsplit('.', 1)[0] for file in os.listdir(Path.PROMPT.value))
+        if file_name in file_list:
+            await FileManager.write(Path.PROMPT.value, file_name, data=prompt)
+            msg_text = 'Done!'
     await message.answer(
         text=msg_text,
     )
