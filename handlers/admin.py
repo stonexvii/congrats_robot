@@ -1,4 +1,6 @@
-from aiogram import Router, Bot
+import os
+
+from aiogram import Router
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message
 
@@ -11,10 +13,26 @@ admin_router.message.middleware(Admin())
 
 
 @admin_router.message(Command('set'))
-async def command_start(message: Message, command: CommandObject, bot: Bot):
+async def admin_set(message: Message, command: CommandObject):
     if command.args:
-        await FileManager.write(Path.PROMPT.value, 'main_prompt', data=command.args.strip())
-
+        file_name, prompt = command.args.split(' ', 1)
+        await FileManager.write(Path.PROMPT.value, file_name, data=prompt)
+        msg_text = 'Done!'
+    else:
+        msg_text = '\n'.join(file.rsplit('.', 1)[0] for file in os.listdir(Path.PROMPT.value))
     await message.answer(
-        text='Done!',
+        text=msg_text,
+    )
+
+
+@admin_router.message(Command('get'))
+async def admin_get(message: Message, command: CommandObject):
+    file_list = [file.rsplit('.', 1)[0] for file in os.listdir(Path.PROMPT.value)]
+    msg_text = '\n'.join(file_list)
+    if command.args:
+        file_name, prompt = command.args.split(' ', 1)
+        if file_name in file_list:
+            msg_text = await FileManager.read(Path.PROMPT.value, file_name, data=prompt)
+    await message.answer(
+        text=msg_text,
     )
