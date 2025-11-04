@@ -1,4 +1,5 @@
 import datetime
+from pytz import timezone
 from zoneinfo import ZoneInfo
 from aiogram import Bot
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -11,7 +12,7 @@ from database import requests
 from keyboards import ikb_remind_menu
 
 storage = MemoryStorage()
-scheduler = AsyncIOScheduler()
+scheduler = AsyncIOScheduler(timezone=timezone('Europe/Moscow'))
 
 
 async def send_reminder(user_tg_id: int, data: dict, bot: Bot):
