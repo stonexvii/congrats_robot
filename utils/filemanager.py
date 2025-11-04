@@ -6,11 +6,13 @@ import aiofiles
 class FileManager:
 
     @staticmethod
-    async def read(*args, **kwargs):
+    async def read(*args, with_kwargs: bool = True, **kwargs):
         path = os.path.join(*args) + '.txt'
         async with aiofiles.open(path, 'r', encoding='UTF-8') as file:
             response = await file.read()
-        return response.strip().format(**kwargs)
+        if with_kwargs:
+            return response.strip().format(**kwargs)
+        return response.strip()
 
     @staticmethod
     async def write(*args, data: str):
